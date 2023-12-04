@@ -1,3 +1,8 @@
+/*
+代码仅供参考，请不要直接抄袭。如抄袭，可能会面临挂科等风险。后果自负！！！
+代码仅供参考，请不要直接抄袭。如抄袭，可能会面临挂科等风险。后果自负！！！
+代码仅供参考，请不要直接抄袭。如抄袭，可能会面临挂科等风险。后果自负！！！
+*/
 #include "protocol.h"
 #include "common.h"
 #include "lookup.h"
@@ -8,41 +13,31 @@
 using namespace std;
 
 RipErrorCode disassemble(const uint8_t *packet, uint32_t len, RipPacket *output) {
-  // cout << ":::::::::::::::::::::::::::::::" << endl << sizeof(udphdr) << endl;
   // TODO
   uint16_t plen = ntohs(*(uint16_t*)(packet + 4));
-  //cout << len << ' ' << plen << endl;
   if(len != (uint32_t)plen + 40) return RipErrorCode::ERR_LENGTH;
 
   uint16_t nxt = *(uint16_t*)(packet + 6) % (1 << 8);
-  //cout << nxt << endl;
   if(nxt != 17) return RipErrorCode::ERR_IP_NEXT_HEADER_NOT_UDP;
 
   if(plen < 8) return RipErrorCode::ERR_LENGTH;
 
   uint16_t src = ntohs(*(uint16_t*)(packet + 40)), dst = ntohs(*(uint16_t*)(packet + 42));
-  //cout << src << dst << endl;
   if(src != 521 || dst != 521) return RipErrorCode::ERR_BAD_UDP_PORT;
 
   uint16_t ulen = ntohs(*(uint16_t*)(packet + 44));
-  //cout << ulen << endl;
-  //cout << ntohs(output->numEntries) << endl;
   if((ulen - 12) % 20 != 0) return RipErrorCode::ERR_LENGTH;
 
-  //cout << *(uint16_t*)(packet + 48) % (1 << 8) << endl;
   if(*(uint16_t*)(packet + 48) % (1 << 8) != 1 && *(uint16_t*)(packet + 48) % (1 << 8) != 2) return RipErrorCode::ERR_RIP_BAD_COMMAND;
 
-  //cout << *(uint16_t*)(packet + 49) % (1 << 8) << endl;
   if(*(uint16_t*)(packet + 49) % (1 << 8) != 1) return RipErrorCode::ERR_RIP_BAD_VERSION;
 
-  //cout << *(uint16_t*)(packet + 50) << endl;
   if(*(uint16_t*)(packet + 50) != 0) return RipErrorCode::ERR_RIP_BAD_ZERO;
 
   for(int i = 0; i < (ulen - 12) / 20; i++){
     uint16_t mc = *(uint16_t*)(packet + 70 + 20 * i) / (1 << 8);
     uint16_t pl = *(uint16_t*)(packet + 70 + 20 * i) % (1 << 8);
     uint16_t rt = ntohs(*(uint16_t*)(packet + 68 + 20 * i));
-    //cout << "mc" << mc << ' ' << "pl" << pl << ' ' << "rt" << rt << endl;
     if(mc == 0xFF){
       if(pl != 0) return RipErrorCode::ERR_RIP_BAD_PREFIX_LEN;
       if(rt != 0) return RipErrorCode::ERR_RIP_BAD_ROUTE_TAG;
@@ -53,7 +48,6 @@ RipErrorCode disassemble(const uint8_t *packet, uint32_t len, RipPacket *output)
     uint16_t mc = *(uint16_t*)(packet + 70 + 20 * i) / (1 << 8);
     uint16_t pl = *(uint16_t*)(packet + 70 + 20 * i) % (1 << 8);
     uint16_t rt = ntohs(*(uint16_t*)(packet + 68 + 20 * i));
-    //cout << mc << ' ' << pl << ' ' << rt << endl;
     if(mc != 0xFF){
       if(mc < 1 || mc > 16) return RipErrorCode::ERR_RIP_BAD_METRIC;
       if(pl > 128) return RipErrorCode::ERR_RIP_BAD_PREFIX_LEN;
@@ -99,7 +93,6 @@ uint32_t assemble(const RipPacket *rip, uint8_t *buffer) {
   buffer[1] = 1;
   buffer[2] = 0;
   buffer[3] = 0;
-  // cout << "end" << endl;
   for(int i = 0; i < rip->numEntries; i++){
     for(int j = 0; j < 16; j++){
       buffer[4 + i * 20 + j] = rip->entries[i].prefix_or_nh.s6_addr[j];
